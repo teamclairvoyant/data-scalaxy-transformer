@@ -37,3 +37,6 @@ jobs:
           cache: 'sbt'
       - name: Run Unit Tests
         run: sbt test
+        env:
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
