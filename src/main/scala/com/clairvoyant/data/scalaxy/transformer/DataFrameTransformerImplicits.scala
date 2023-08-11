@@ -2,30 +2,14 @@ package com.clairvoyant.data.scalaxy.transformer
 
 import org.apache.spark.sql.catalyst.parser.CatalystSqlParser
 import org.apache.spark.sql.functions.*
-import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType}
+import org.apache.spark.sql.types.*
 import org.apache.spark.sql.{Column, DataFrame}
 
 object DataFrameTransformerImplicits {
 
   extension (df: DataFrame) {
 
-    def addColumn(
-        columnName: String,
-        columnValue: String,
-        columnDataType: Option[String]
-    ): DataFrame =
-      columnDataType
-        .map(dataType => df.withColumn(columnName, lit(columnValue).cast(dataType)))
-        .getOrElse(df.withColumn(columnName, lit(columnValue)))
-
-    def addColumnWithExpression(
-        columnName: String,
-        columnValueExpression: String,
-        columnDataType: Option[String]
-    ): DataFrame =
-      columnDataType
-        .map(dataType => df.withColumn(columnName, expr(columnValueExpression).cast(dataType)))
-        .getOrElse(df.withColumn(columnName, expr(columnValueExpression)))
+    // --- PRIVATE METHODS --- //
 
     private def addPrefixOrSuffixToColumnNames(
         prefixOrSuffixFunction: String => String,
@@ -47,6 +31,108 @@ object DataFrameTransformerImplicits {
           }.toMap
         )
 
+    private def applyChangeNameFunctionRecursively(
+        schema: StructType,
+        changeNameFunction: String => String
+    ): StructType =
+      StructType(
+        schema.flatMap {
+          case sf @ StructField(
+                name,
+                ArrayType(arrayNestedType: StructType, containsNull),
+                nullable,
+                metadata
+              ) =>
+            StructType(
+              Seq(
+                sf.copy(
+                  changeNameFunction(name),
+                  dataType = ArrayType(
+                    applyChangeNameFunctionRecursively(arrayNestedType, changeNameFunction),
+                    containsNull
+                  ),
+                  nullable,
+                  metadata
+                )
+              )
+            )
+          case sf @ StructField(name, structType: StructType, nullable, metadata) =>
+            StructType(
+              Seq(
+                sf.copy(
+                  changeNameFunction(name),
+                  dataType = applyChangeNameFunctionRecursively(structType, changeNameFunction),
+                  nullable,
+                  metadata
+                )
+              )
+            )
+
+          case sf @ StructField(name, _, _, _) =>
+            StructType(
+              Seq(
+                sf.copy(name = changeNameFunction(name))
+              )
+            )
+        }
+      )
+
+    private def castColumn(
+        columnName: String,
+        dataType: String | DataType
+    ): Column = {
+      val timestampDataTypeRegexPattern = "timestamp(?:\\((.*)\\))?".r
+      val dateDataTypeRegexPattern = "date(?:\\((.*)\\))?".r
+
+      dataType match {
+        case dt: String =>
+          dt
+        case dt: DataType =>
+          dt.typeName
+      } match {
+        case timestampDataTypeRegexPattern(timestampFormat) =>
+          {
+            Option(timestampFormat) match {
+              case Some(timestampFormat) =>
+                to_timestamp(col(columnName), timestampFormat)
+              case None =>
+                to_timestamp(col(columnName))
+            }
+          }.as(columnName)
+        case dateDataTypeRegexPattern(dateFormat) =>
+          {
+            Option(dateFormat) match {
+              case Some(dateFormat) =>
+                to_date(col(columnName), dateFormat)
+              case None =>
+                to_date(col(columnName))
+            }
+          }.as(columnName)
+        case dataType =>
+          col(columnName).cast(dataType)
+      }
+    }
+
+    // --- PUBLIC METHODS --- //
+
+    def addColumn(
+        columnName: String,
+        columnValue: String,
+        columnDataType: Option[String] = None
+    ): DataFrame =
+      columnDataType
+        .map(dataType => df.withColumn(columnName, lit(columnValue).cast(dataType)))
+        .getOrElse(df.withColumn(columnName, lit(columnValue)))
+
+    def addColumnWithExpression(
+        columnName: String,
+        columnExpression: String,
+        columnDataType: Option[String] = None
+    ): DataFrame =
+      columnDataType
+        .map(dataType => df.withColumn(columnName, expr(columnExpression).cast(dataType)))
+        .getOrElse(df.withColumn(columnName, expr(columnExpression)))
+
     def addPrefixToColumnNames(
         prefix: String,
         columnNames: List[String] = List.empty
@@ -58,68 +144,43 @@ object DataFrameTransformerImplicits {
 
     def addSuffixToColumnNames(
         suffix: String,
-        columnNames: List[String] = List[String]()
+        columnNames: List[String] = List.empty
     ): DataFrame =
       addPrefixOrSuffixToColumnNames(
         prefixOrSuffixFunction = (columnName: String) => s"${columnName}_$suffix",
         columnNames = columnNames
       )
 
-    def castColumns(columnDataTypeMapper: Map[String, String]): DataFrame = {
-      val timestampDataTypeRegexPattern = "timestamp(?:\\((.*)\\))?".r
-      val dateDataTypeRegexPattern = "date(?:\\((.*)\\))?".r
-
+    def castColumns(columnDataTypeMapper: Map[String, String]): DataFrame =
       df.select(
         df.columns
           .map { columnName =>
             columnDataTypeMapper
               .get(columnName)
-              .map {
-                case timestampDataTypeRegexPattern(timestampFormat) =>
-                  {
-                    Option(timestampFormat) match {
-                      case Some(timestampFormat) =>
-                        to_timestamp(col(columnName), timestampFormat)
-                      case None =>
-                        to_timestamp(col(columnName))
-                    }
-                  }.as(columnName)
-                case dateDataTypeRegexPattern(dateFormat) =>
-                  {
-                    Option(dateFormat) match {
-                      case Some(dateFormat) =>
-                        to_date(col(columnName), dateFormat)
-                      case None =>
-                        to_date(col(columnName))
-                    }
-                  }.as(columnName)
-                case dataType =>
-                  col(columnName).cast(dataType)
-              }
+              .map(castColumn(columnName, _))
               .getOrElse(col(columnName))
           }*
       )
-    }
 
     def castColumnsBasedOnPrefix(
         prefix: String,
-        dataTypeToCast: String
+        dataType: String
     ): DataFrame =
       castColumns(
         df.columns
           .filter(_.startsWith(prefix))
-          .map(_ -> dataTypeToCast)
+          .map(_ -> dataType)
           .toMap
       )
 
     def castColumnsBasedOnSuffix(
         suffix: String,
-        dataTypeToCast: String
+        dataType: String
     ): DataFrame =
       castColumns(
         df.columns
           .filter(_.endsWith(suffix))
-          .map(_ -> dataTypeToCast)
+          .map(_ -> dataType)
           .toMap
       )
 
@@ -178,7 +239,10 @@ object DataFrameTransformerImplicits {
           dataFrame.select(
             dataFrame.schema.map { structField =>
               if (structField.dataType == fromDataType)
-                col(structField.name).cast(toDataType)
+                castColumn(
+                  columnName = structField.name,
+                  dataType = toDataType
+                )
               else
                 col(structField.name)
             }.toList*
@@ -187,62 +251,8 @@ object DataFrameTransformerImplicits {
 
     def castNestedColumn(
         columnName: String,
-        ddl: String
-    ): DataFrame = df.withColumn(columnName, from_json(to_json(col(columnName)), DataType.fromDDL(ddl)))
-
-    private def applyChangeNameFunctionRecursively(
-        schema: StructType,
-        changeNameFunction: String => String
-    ): StructType =
-      StructType(
-        schema.flatMap {
-          case sf @ StructField(
-                name,
-                ArrayType(arrayNestedType: StructType, containsNull),
-                nullable,
-                metadata
-              ) =>
-            StructType(
-              Seq(
-                sf.copy(
-                  changeNameFunction(name),
-                  dataType = ArrayType(
-                    applyChangeNameFunctionRecursively(arrayNestedType, changeNameFunction),
-                    containsNull
-                  ),
-                  nullable,
-                  metadata
-                )
-              )
-            )
-          case sf @ StructField(name, structType: StructType, nullable, metadata) =>
-            StructType(
-              Seq(
-                sf.copy(
-                  changeNameFunction(name),
-                  dataType = applyChangeNameFunctionRecursively(structType, changeNameFunction),
-                  nullable,
-                  metadata
-                )
-              )
-            )
-
-          case sf @ StructField(name, _, _, _) =>
-            StructType(
-              Seq(
-                sf.copy(name = changeNameFunction(name))
-              )
-            )
-        }
-      )
-
-    def convertColumnToJson(columnName: String): DataFrame = df.withColumn(columnName, to_json(col(columnName)))
-
-    def deleteColumns(columnNames: List[String]): DataFrame = df.drop(columnNames*)
-
-    def explodeColumn(columnName: String): DataFrame = df.withColumn(columnName, explode(col(columnName)))
-
-    def filterRecords(filterCondition: String): DataFrame = df.filter(filterCondition)
+        schemaDDL: String
+    ): DataFrame = df.withColumn(columnName, from_json(to_json(col(columnName)), DataType.fromDDL(schemaDDL)))
 
     def flattenSchema: DataFrame = {
       def flattenSchemaFromStructType(
@@ -278,11 +288,6 @@ object DataFrameTransformerImplicits {
       )
 
     def replaceEmptyStringsWithNulls: DataFrame = df.na.replace(df.columns, Map("" -> null))
-
-    def replaceStringInColumnValue(columnName: String, pattern: String, replacement: String): DataFrame =
-      df.withColumn(columnName, regexp_replace(col(columnName), pattern, replacement))
-
-    def selectColumns(columnNames: List[String]): DataFrame = df.select(columnNames.map(col)*)
 
     def splitColumn(
         fromColumn: String,

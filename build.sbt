@@ -29,7 +29,9 @@ ThisBuild / scalafixOnCompile := true
 
 ThisBuild / wartremoverErrors ++= Warts.allBut(
   Wart.DefaultArguments,
+  Wart.Equals,
   Wart.IsInstanceOf,
+  Wart.IterableOps,
   Wart.Recursion,
   Wart.Throw
 )
