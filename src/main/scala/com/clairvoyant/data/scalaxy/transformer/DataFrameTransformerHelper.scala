@@ -17,7 +17,7 @@ object DataFrameTransformerHelper {
         case "kebab" =>
           kebabToCamel(inputString)
         case _ =>
-          throw new Exception(s"Camel-case conversion only supported for source case types : Snake/Pascal/Kebab..")
+          throw new Exception("Camel-case conversion only supported for source case types : Snake/Pascal/Kebab..")
       }
 
     private def snakeToCamel(snakeCase: String): String = {
@@ -45,7 +45,7 @@ object DataFrameTransformerHelper {
         case "pascal" =>
           pascalToKebab(inputString)
         case _ =>
-          throw new Exception(s"Kebab-case conversion only supported for source case types : Snake/Camel/Pascal..")
+          throw new Exception("Kebab-case conversion only supported for source case types : Snake/Camel/Pascal..")
       }
 
     private def snakeToKebab(snakeCase: String): String = snakeCase.replaceAll("_", "-").toLowerCase()
@@ -75,7 +75,7 @@ object DataFrameTransformerHelper {
         case "kebab" =>
           kebabToPascal(inputString)
         case _ =>
-          throw new Exception(s"Pascal-case conversion only supported for source case types : Snake/Camel/Kebab..")
+          throw new Exception("Pascal-case conversion only supported for source case types : Snake/Camel/Kebab..")
       }
 
     private def snakeToPascal(snakeCase: String): String = snakeCase.toLowerCase.split("_").map(_.capitalize).mkString
@@ -97,7 +97,7 @@ object DataFrameTransformerHelper {
         case "kebab" =>
           kebabToSnake(inputString)
         case _ =>
-          throw new Exception(s"Snake-case conversion only supported for source case types : Camel/Pascal/Kebab..")
+          throw new Exception("Snake-case conversion only supported for source case types : Camel/Pascal/Kebab..")
       }
 
     private def camelToSnake(camelCase: String): String =
