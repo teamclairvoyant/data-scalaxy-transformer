@@ -586,6 +586,255 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       .toDDL shouldBe "col_B STRUCT<col_C: STRING, col_D: STRING>"
   }
 
+  "changeCaseOfColumnNames() - with 'lower' targetCase" should "renames all the columns to lower case" in {
+    val df = readJSON(
+      """|{
+         |  "col_a": "1",
+         |  "COL_B": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      targetCaseType = "lower"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "col_a": "1",
+        |  "col_b": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'kebab' targetCase and 'snake' sourceCase" should "renames all the columns to kebab case" in {
+    val df = readJSON(
+      """|{
+         |  "col_a": "1",
+         |  "COL_B": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "snake",
+      targetCaseType = "kebab"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "col-a": "1",
+        |  "col-b": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'camel' targetCase and 'snake' sourceCase" should "rename all the columns to camel case" in {
+    val df = readJSON(
+      """|{
+         |  "col_a": "1",
+         |  "COL_B": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "snake",
+      targetCaseType = "camel"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "colA": "1",
+        |  "colB": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'pascal' targetCase and 'snake' sourceCase" should "rename all the columns to pascal case" in {
+    val df = readJSON(
+      """|{
+         |  "col_a": "1",
+         |  "COL_B": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "snake",
+      targetCaseType = "pascal"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "ColA": "1",
+        |  "ColB": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'snake' targetCase and 'camel' sourceCase" should "rename all the columns to snake case" in {
+    val df = readJSON(
+      """|{
+         |  "colA": "1",
+         |  "colB": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "camel",
+      targetCaseType = "snake"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "col_a": "1",
+        |  "col_b": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'kebab' targetCase and 'camel' sourceCase" should "rename all the columns to kebab case" in {
+    val df = readJSON(
+      """|{
+         |  "colA": "1",
+         |  "colB": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "camel",
+      targetCaseType = "kebab"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "col-a": "1",
+        |  "col-b": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'pascal' targetCase and 'camel' sourceCase" should "rename all the columns to pascal case" in {
+    val df = readJSON(
+      """|{
+         |  "colA": "1",
+         |  "colB": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "camel",
+      targetCaseType = "pascal"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "ColA": "1",
+        |  "ColB": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'snake' targetCase and 'pascal' sourceCase" should "rename all the columns to snake case" in {
+    val df = readJSON(
+      """|{
+         |  "ColA": "1",
+         |  "ColB": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "pascal",
+      targetCaseType = "snake"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "col_a": "1",
+        |  "col_b": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'kebab' targetCase and 'pascal' sourceCase" should "rename all the columns to kebab case" in {
+    val df = readJSON(
+      """|{
+         |  "ColA": "1",
+         |  "ColB": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "pascal",
+      targetCaseType = "kebab"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "col-a": "1",
+        |  "col-b": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "changeCaseOfColumnNames() - with 'camel' targetCase and 'pascal' sourceCase" should "rename all the columns to camel case" in {
+    val df = readJSON(
+      """|{
+         |  "ColA": "1",
+         |  "ColB": "2"
+         |}""".stripMargin
+    )
+
+    val actualDF = df.changeCaseOfColumnNames(
+      sourceCaseType = "pascal",
+      targetCaseType = "camel"
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "colA": "1",
+        |  "colB": "2"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
   "flattenSchema()" should "flatten the dataframe" in {
     val df = readJSON(
       """
