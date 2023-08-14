@@ -66,5 +66,5 @@ val rootSettings = Seq(
 
 // ----- PROJECTS ----- //
 
-lazy val `text-reader` = (project in file("."))
+lazy val `transformer` = (project in file("."))
   .settings(rootSettings)
