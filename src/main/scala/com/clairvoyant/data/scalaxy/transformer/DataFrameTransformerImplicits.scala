@@ -1,5 +1,6 @@
 package com.clairvoyant.data.scalaxy.transformer
 
+import com.clairvoyant.data.scalaxy.transformer.DataFrameTransformerHelper.*
 import org.apache.spark.sql.catalyst.parser.CatalystSqlParser
 import org.apache.spark.sql.functions.*
 import org.apache.spark.sql.types.*
@@ -90,7 +91,7 @@ object DataFrameTransformerImplicits {
         .getOrElse(df.withColumn(columnName, lit(columnValue)))
 
     /**
-     * It lets the user add a new column with an expression value of the desired data type.
+     * It lets the user add a new column with an expression value of the desired data type
      * @param columnName
      *   Name of the new column to be added
      * @param columnExpression
@@ -297,6 +298,46 @@ object DataFrameTransformerImplicits {
         columnName: String,
         schemaDDL: String
     ): DataFrame = df.withColumn(columnName, from_json(to_json(col(columnName)), DataType.fromDDL(schemaDDL)))
+
+    /**
+     * It lets the user change the case of the column names
+     * @param sourceCaseType
+     *   The original case type
+     * @param targetCaseType
+     *   The required case type
+     * @return
+     *   DataFrame with the changed case of columns
+     */
+    def changeCaseOfColumnNames(
+        sourceCaseType: String = "lower",
+        targetCaseType: String
+    ): DataFrame = {
+      val converter =
+        targetCaseType.toLowerCase() match {
+          case "camel" =>
+            new CamelCaseConverter()
+          case "snake" =>
+            new SnakeCaseConverter()
+          case "pascal" =>
+            new PascalCaseConverter()
+          case "kebab" =>
+            new KebabCaseConverter()
+          case "lower" =>
+            new LowerCaseConverter()
+          case "upper" =>
+            new UpperCaseConverter()
+          case _ =>
+            throw new Exception(s"The provided caseType: $targetCaseType is not supported.")
+        }
+
+      val renamedColumnNames: Seq[String] = df.columns.map { columnName =>
+        converter.convert(columnName, sourceCaseType)
+      }
+
+      df.select(df.columns.zip(renamedColumnNames).map { case (original, renamed) =>
+        col(original).as(renamed)
+      }: _*)
+    }
 
     /**
      * It lets the user flatten the schema of the dataframe. If any of the column is of StructType or is nested, this

@@ -15,6 +15,7 @@ User can use below available API methods that can be called on a spark dataframe
 * castColumnsBasedOnSuffix
 * castFromToDataTypes
 * castNestedColumn
+* changeCaseOfColumnNames
 * flattenSchema
 * renameColumns
 * replaceEmptyStringsWithNulls
