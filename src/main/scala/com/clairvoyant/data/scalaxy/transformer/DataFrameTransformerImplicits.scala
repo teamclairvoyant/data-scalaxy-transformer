@@ -99,8 +99,8 @@ object DataFrameTransformerImplicits {
      * @param columnDataType
      *   The spark sql data type that new column needs to be casted into
      * @param replaceExisting
-     *   If set to true, if a column already exists with the same name as `columnName`, it will get replaced with
-     *   the new value. If set to false, then it returns original dataframe.
+     *   If set to true, if a column already exists with the same name as `columnName`, it will get replaced with the
+     *   new value. If set to false, then it returns original dataframe.
      * @return
      *   DataFrame with the new column added
      */
@@ -128,8 +128,8 @@ object DataFrameTransformerImplicits {
      * @param columnDataType
      *   The spark sql data type that new column needs to be casted into
      * @param replaceExisting
-     *   If set to true, if a column already exists with the same name as `columnName`, it will get replaced with
-     *   the new value. If set to false, then it returns original dataframe.
+     *   If set to true, if a column already exists with the same name as `columnName`, it will get replaced with the
+     *   new value. If set to false, then it returns original dataframe.
      * @return
      *   DataFrame with the new column added
      */
