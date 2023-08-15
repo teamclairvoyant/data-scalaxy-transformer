@@ -67,6 +67,57 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
     actualDF should matchExpectedDataFrame(expectedDF)
   }
 
+  "addColumn() - with replaceExisting as false" should "throw exception" in {
+    val df = readJSON(
+      """
+        |{
+        |  "col_A": "val_A",
+        |  "col_B": "val_B",
+        |  "col_C": 10.2
+        |}
+        |""".stripMargin
+    )
+
+    val actualDF = df.addColumn(
+      columnName = "col_C",
+      columnValue = "val_C",
+      columnDataType = Some("string")
+    )
+
+    actualDF should matchExpectedDataFrame(df)
+  }
+
+  "addColumn() - with replaceExisting as true" should "replace the existing column with new value" in {
+    val df = readJSON(
+      """
+        |{
+        |  "col_A": "val_A",
+        |  "col_B": "val_B",
+        |  "col_C": 10.2
+        |}
+        |""".stripMargin
+    )
+
+    val actualDF = df.addColumn(
+      columnName = "col_C",
+      columnValue = "val_C",
+      columnDataType = Some("string"),
+      replaceExisting = true
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "col_A": "val_A",
+        |  "col_B": "val_B",
+        |  "col_C": "val_C"
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
   "addColumnWithExpression() - without data type" should "add new column with default data type" in {
     val df = readJSON(
       """
@@ -121,6 +172,55 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
         |  "col_B": "val_B",
         |  "col_C": 10.2,
         |  "col_D": 20
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "addColumnWithExpression() - with replaceExisting as false" should "throw exception" in {
+    val df = readJSON(
+      """
+        |{
+        |  "col_A": "val_A",
+        |  "col_B": 6,
+        |  "col_C": 10.2
+        |}
+        |""".stripMargin
+    )
+
+    val actualDF = df.addColumnWithExpression(
+      columnName = "col_C",
+      columnExpression = "col_B * 2"
+    )
+
+    actualDF should matchExpectedDataFrame(df)
+  }
+
+  "addColumnWithExpression() - with replaceExisting as true" should "replace the existing column with new value" in {
+    val df = readJSON(
+      """
+        |{
+        |  "col_A": "val_A",
+        |  "col_B": 6,
+        |  "col_C": 10.2
+        |}
+        |""".stripMargin
+    )
+
+    val actualDF = df.addColumnWithExpression(
+      columnName = "col_C",
+      columnExpression = "col_B * 2",
+      replaceExisting = true
+    )
+
+    val expectedDF = readJSON(
+      """
+        |{
+        |  "col_A": "val_A",
+        |  "col_B": 6,
+        |  "col_C": 12
         |}
         |""".stripMargin
     )

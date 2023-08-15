@@ -12,6 +12,26 @@ object DataFrameTransformerImplicits {
 
     // --- PRIVATE METHODS --- //
 
+    private def addColumn(
+        dataFrame: DataFrame,
+        columnName: String,
+        columnValue: String,
+        columnDataType: Option[String]
+    ): DataFrame =
+      columnDataType
+        .map(dataType => dataFrame.withColumn(columnName, lit(columnValue).cast(dataType)))
+        .getOrElse(dataFrame.withColumn(columnName, lit(columnValue)))
+
+    private def addColumnWithExpression(
+        dataFrame: DataFrame,
+        columnName: String,
+        columnExpression: String,
+        columnDataType: Option[String]
+    ): DataFrame =
+      columnDataType
+        .map(dataType => dataFrame.withColumn(columnName, expr(columnExpression).cast(dataType)))
+        .getOrElse(dataFrame.withColumn(columnName, expr(columnExpression)))
+
     private def addPrefixOrSuffixToColumnNames(
         prefixOrSuffixFunction: String => String,
         columnNames: List[String] = List.empty
@@ -78,37 +98,54 @@ object DataFrameTransformerImplicits {
      *   Literal value of the new column
      * @param columnDataType
      *   The spark sql data type that new column needs to be casted into
+     * @param replaceExisting
+     *   If set to true, if a column already exists with the same name as `columnName`, it will get replaced with the
+     *   new value. If set to false, then it returns original dataframe.
      * @return
      *   DataFrame with the new column added
      */
     def addColumn(
         columnName: String,
         columnValue: String,
-        columnDataType: Option[String] = None
+        columnDataType: Option[String] = None,
+        replaceExisting: Boolean = false
     ): DataFrame =
-      columnDataType
-        .map(dataType => df.withColumn(columnName, lit(columnValue).cast(dataType)))
-        .getOrElse(df.withColumn(columnName, lit(columnValue)))
+      if (df.columns.exists(_.toLowerCase == columnName.toLowerCase)) {
+        if (replaceExisting)
+          addColumn(df.drop(columnName), columnName, columnValue, columnDataType)
+        else
+          df
+      } else
+        addColumn(df, columnName, columnValue, columnDataType)
 
     /**
      * It lets the user add a new column with an expression value of the desired data type
+     *
      * @param columnName
      *   Name of the new column to be added
      * @param columnExpression
      *   Expression for the value of the new column
      * @param columnDataType
      *   The spark sql data type that new column needs to be casted into
+     * @param replaceExisting
+     *   If set to true, if a column already exists with the same name as `columnName`, it will get replaced with the
+     *   new value. If set to false, then it returns original dataframe.
      * @return
      *   DataFrame with the new column added
      */
     def addColumnWithExpression(
         columnName: String,
         columnExpression: String,
-        columnDataType: Option[String] = None
+        columnDataType: Option[String] = None,
+        replaceExisting: Boolean = false
     ): DataFrame =
-      columnDataType
-        .map(dataType => df.withColumn(columnName, expr(columnExpression).cast(dataType)))
-        .getOrElse(df.withColumn(columnName, expr(columnExpression)))
+      if (df.columns.exists(_.toLowerCase == columnName.toLowerCase)) {
+        if (replaceExisting)
+          addColumnWithExpression(df.drop(columnName), columnName, columnExpression, columnDataType)
+        else
+          df
+      } else
+        addColumnWithExpression(df, columnName, columnExpression, columnDataType)
 
     /**
      * It lets the user add a desired prefix to column names

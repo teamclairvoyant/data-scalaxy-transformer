@@ -32,6 +32,7 @@ ThisBuild / wartremoverErrors ++= Warts.allBut(
   Wart.Equals,
   Wart.IsInstanceOf,
   Wart.IterableOps,
+  Wart.Overloading,
   Wart.PlatformDefault,
   Wart.Recursion,
   Wart.StringPlusAny,
