@@ -1,9 +1,9 @@
 package com.clairvoyant.data.scalaxy.transformer
 
+import com.clairvoyant.data.scalaxy.test.util.matchers.DataFrameMatcher
+import com.clairvoyant.data.scalaxy.test.util.readers.DataFrameReader
 import com.clairvoyant.data.scalaxy.transformer.DataFrameTransformerImplicits.*
 import org.apache.spark.sql.types.*
-import com.clairvoyant.data.scalaxy.test.util.readers.DataFrameReader
-import com.clairvoyant.data.scalaxy.test.util.matchers.DataFrameMatcher
 
 class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMatcher {
 
