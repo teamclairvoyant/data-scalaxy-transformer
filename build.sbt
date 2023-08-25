@@ -52,7 +52,9 @@ val dataScalaxyTestUtilDependencies = Seq(
 val sparkDependencies = Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion,
   "org.apache.spark" %% "spark-sql" % sparkVersion
-).map(_.cross(CrossVersion.for3Use2_13))
+)
+  .map(_ excludeAll ("org.scala-lang.modules", "scala-xml"))
+  .map(_.cross(CrossVersion.for3Use2_13))
 
 // ----- MODULE DEPENDENCIES ----- //
 
@@ -64,7 +66,7 @@ val rootDependencies =
 
 val rootSettings = Seq(
   Keys.scalacOptions ++= Seq("-Xmax-inlines", "50"),
-  libraryDependencies ++= rootDependencies.map(_ excludeAll ("org.scala-lang.modules", "scala-xml"))
+  libraryDependencies ++= rootDependencies
 )
 
 // ----- PROJECTS ----- //
