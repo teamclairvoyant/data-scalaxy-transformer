@@ -1,13 +1,14 @@
 package com.clairvoyant.data.scalaxy.transformer
 
-import com.clairvoyant.data.scalaxy.test.util.DataScalaxyTestUtil
+import com.clairvoyant.data.scalaxy.test.util.matchers.DataFrameMatcher
+import com.clairvoyant.data.scalaxy.test.util.readers.DataFrameReader
 import com.clairvoyant.data.scalaxy.transformer.DataFrameTransformerImplicits.*
 import org.apache.spark.sql.types.*
 
-class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
+class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMatcher {
 
   "addColumn() - without data type" should "add new column with default data type" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -22,7 +23,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       columnValue = "val_D"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -37,7 +38,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addColumn() - with data type" should "add new column with casted data type" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -53,7 +54,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       columnDataType = Some("double")
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -68,7 +69,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addColumn() - with replaceExisting as false" should "throw exception" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -88,7 +89,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addColumn() - with replaceExisting as true" should "replace the existing column with new value" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -105,7 +106,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       replaceExisting = true
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -119,7 +120,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addColumnWithExpression() - without data type" should "add new column with default data type" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -134,7 +135,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       columnExpression = "col_C * 2"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -149,7 +150,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addColumnWithExpression() - with data type" should "add new column with casted data type" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -165,7 +166,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       columnDataType = Some("long")
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -180,7 +181,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addColumnWithExpression() - with replaceExisting as false" should "throw exception" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -199,7 +200,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addColumnWithExpression() - with replaceExisting as true" should "replace the existing column with new value" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -215,7 +216,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       replaceExisting = true
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -229,7 +230,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addPrefixToColumnNames() - with empty column list" should "add prefix to all columns" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -243,7 +244,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       prefix = "test"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "test_col_A": "val_A",
@@ -257,7 +258,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addPrefixToColumnNames() - with non empty column list" should "add prefix to specified columns in the list" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -272,7 +273,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       columnNames = List("col_A", "col_B")
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "test_col_A": "val_A",
@@ -286,7 +287,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addSuffixToColumnNames() - with empty column list" should "add suffix to all columns" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -300,7 +301,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       suffix = "test"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A_test": "val_A",
@@ -314,7 +315,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "addSuffixToColumnNames() - with non empty column list" should "add suffix to specified columns in the list" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -329,7 +330,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       columnNames = List("col_A", "col_B")
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A_test": "val_A",
@@ -343,7 +344,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "castColumns() - with empty data type mapper" should "not cast any column" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": 5,
@@ -398,7 +399,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "castColumns() - with non empty data type mapper" should "cast columns as specified in the mapper" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": 5,
@@ -461,7 +462,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "castColumnsBasedOnPrefix() - with prefix and data type" should "cast columns having specifed prefix" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "name": "abc",
@@ -499,7 +500,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "castColumnsBasedOnSuffix() - with suffix and data type" should "cast columns having specifed suffix" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "name": "abc",
@@ -537,7 +538,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "castFromToDataTypes() - with castRecursively as true" should "cast data types in nested manner" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": 5,
@@ -600,7 +601,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "castFromToDataTypes() - with castRecursively as false" should "cast data types only at root level" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": 5,
@@ -663,7 +664,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "castNestedColumn() - with nested column name and schema ddl" should "cast nested column correctly" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -687,7 +688,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'lower' targetCase" should "renames all the columns to lower case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "col_a": "1",
          |  "COL_B": "2"
@@ -698,7 +699,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "lower"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_a": "1",
@@ -711,7 +712,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'kebab' targetCase and 'snake' sourceCase" should "renames all the columns to kebab case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "col_a": "1",
          |  "COL_B": "2"
@@ -723,7 +724,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "kebab"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col-a": "1",
@@ -736,7 +737,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'camel' targetCase and 'snake' sourceCase" should "rename all the columns to camel case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "col_a": "1",
          |  "COL_B": "2"
@@ -748,7 +749,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "camel"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "colA": "1",
@@ -761,7 +762,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'pascal' targetCase and 'snake' sourceCase" should "rename all the columns to pascal case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "col_a": "1",
          |  "COL_B": "2"
@@ -773,7 +774,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "pascal"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "ColA": "1",
@@ -786,7 +787,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'snake' targetCase and 'camel' sourceCase" should "rename all the columns to snake case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "colA": "1",
          |  "colB": "2"
@@ -798,7 +799,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "snake"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_a": "1",
@@ -811,7 +812,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'kebab' targetCase and 'camel' sourceCase" should "rename all the columns to kebab case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "colA": "1",
          |  "colB": "2"
@@ -823,7 +824,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "kebab"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col-a": "1",
@@ -836,7 +837,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'pascal' targetCase and 'camel' sourceCase" should "rename all the columns to pascal case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "colA": "1",
          |  "colB": "2"
@@ -848,7 +849,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "pascal"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "ColA": "1",
@@ -861,7 +862,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'snake' targetCase and 'pascal' sourceCase" should "rename all the columns to snake case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "ColA": "1",
          |  "ColB": "2"
@@ -873,7 +874,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "snake"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_a": "1",
@@ -886,7 +887,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'kebab' targetCase and 'pascal' sourceCase" should "rename all the columns to kebab case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "ColA": "1",
          |  "ColB": "2"
@@ -898,7 +899,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "kebab"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col-a": "1",
@@ -911,7 +912,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "changeCaseOfColumnNames() - with 'camel' targetCase and 'pascal' sourceCase" should "rename all the columns to camel case" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """|{
          |  "ColA": "1",
          |  "ColB": "2"
@@ -923,7 +924,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       targetCaseType = "camel"
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "colA": "1",
@@ -936,7 +937,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "flattenSchema()" should "flatten the dataframe" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "rewardApprovedMonthPeriod": {
@@ -949,7 +950,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
 
     val actualDF = df.flattenSchema
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "rewardApprovedMonthPeriod_from": "2021-09",
@@ -962,7 +963,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "renameColumns() - with column name mapper" should "rename all specified columns" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "val_A",
@@ -980,7 +981,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       )
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "A": "val_A",
@@ -994,7 +995,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "replaceEmptyStringsWithNulls()" should "replace all empty strings with nulls" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         |  "col_A": "",
@@ -1006,7 +1007,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
 
     val actualDF = df.replaceEmptyStringsWithNulls
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         |  "col_A": null,
@@ -1020,7 +1021,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
   }
 
   "splitColumn()" should "split the column and create new columns accordingly" in {
-    val df = readJSON(
+    val df = readJSONFromText(
       """
         |{
         | "address": "Apt-123,XYZ Building,Pune,Maharashtra"
@@ -1039,7 +1040,7 @@ class DataFrameTransformerImplicitsSpec extends DataScalaxyTestUtil {
       )
     )
 
-    val expectedDF = readJSON(
+    val expectedDF = readJSONFromText(
       """
         |{
         | "address": "Apt-123,XYZ Building,Pune,Maharashtra",
