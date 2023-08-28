@@ -936,6 +936,57 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
     actualDF should matchExpectedDataFrame(expectedDF)
   }
 
+  "convertArrayOfStructToArrayOfString()" should "convert all columns of array of struct type to array of string type" in {
+    val df = readJSONFromText(
+      """
+        |{
+        |  "col_A": [
+        |    {
+        |      "col_B": "val_B1",
+        |      "col_C": "val_C1"
+        |    },
+        |    {
+        |      "col_B": "val_B2",
+        |      "col_C": "val_C2"
+        |    }
+        |  ]
+        |}
+        |""".stripMargin
+    )
+
+    df.schema.fields
+      .filter(_.name == "col_A")
+      .head
+      .dataType shouldBe ArrayType(
+      StructType(
+        List(
+          StructField("col_B", StringType),
+          StructField("col_C", StringType)
+        )
+      )
+    )
+
+    val actualDF = df.convertArrayOfStructToArrayOfString
+
+    val expectedDF = readJSONFromText(
+      """
+        |{
+        |  "col_A": [
+        |    "{\"col_B\":\"val_B1\",\"col_C\":\"val_C1\"}",
+        |    "{\"col_B\":\"val_B2\",\"col_C\":\"val_C2\"}"
+        |  ]
+        |}
+        |""".stripMargin
+    )
+
+    actualDF.schema.fields
+      .filter(_.name == "col_A")
+      .head
+      .dataType shouldBe ArrayType(StringType)
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
   "flattenSchema()" should "flatten the dataframe" in {
     val df = readJSONFromText(
       """
