@@ -936,7 +936,7 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
     actualDF should matchExpectedDataFrame(expectedDF)
   }
 
-  "convertArrayOfStructToArrayOfString()" should "convert all columns of array of struct type to array of string type" in {
+  "convertArrayOfStructToArrayOfJSONString()" should "convert all columns of array of struct type to array of string type" in {
     val df = readJSONFromText(
       """
         |{
@@ -966,7 +966,7 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
       )
     )
 
-    val actualDF = df.convertArrayOfStructToArrayOfString
+    val actualDF = df.convertArrayOfStructToArrayOfJSONString
 
     val expectedDF = readJSONFromText(
       """
@@ -983,6 +983,43 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
       .filter(_.name == "col_A")
       .head
       .dataType shouldBe ArrayType(StringType)
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "convertJSONStringToStruct() - with columnName" should "convert the specified column to Struct Type" in {
+    val df = readJSONFromText(
+      """
+        |{
+        |  "col_A": "{\"col_B\":\"val_B1\",\"col_C\":\"val_C1\"}"
+        |}
+        |""".stripMargin
+    )
+
+    val actualDF = df.convertJSONStringToStruct(
+      columnName = "col_A"
+    )
+
+    val expectedDF = readJSONFromText(
+      """
+        |{
+        |  "col_A": {
+        |    "col_B": "val_B1",
+        |    "col_C": "val_C1"
+        |  }
+        |}
+        |""".stripMargin
+    )
+
+    actualDF.schema.fields
+      .filter(_.name == "col_A")
+      .head
+      .dataType shouldBe StructType(
+      List(
+        StructField("col_B", StringType),
+        StructField("col_C", StringType)
+      )
+    )
 
     actualDF should matchExpectedDataFrame(expectedDF)
   }

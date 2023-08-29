@@ -375,18 +375,38 @@ object DataFrameTransformerImplicits {
     }
 
     /**
-     * Converts the columns of array of struct type to array of string type
+     * Converts the columns of array of struct type to array of json string type
      *
      * @return
-     *   DataFrame with the columns of array of struct type converted to array of string type
+     *   DataFrame with the columns of array of struct type converted to array of json string type
      */
-    def convertArrayOfStructToArrayOfString: DataFrame =
+    def convertArrayOfStructToArrayOfJSONString: DataFrame =
       df.schema.fields
         .filter(_.dataType.sql.toLowerCase().startsWith("array<struct"))
         .map(_.name)
         .foldLeft(df) { (dataFrame, fieldName) =>
           dataFrame.withColumn(fieldName, transform(col(fieldName), column => to_json(column)))
         }
+
+    /**
+     * Converts the column with JSON string as value to struct type
+     *
+     * @param columnName
+     *   Name of the column to be converted
+     * @return
+     *   DataFrame with the column converted to struct type
+     */
+    def convertJSONStringToStruct(
+        columnName: String
+    ): DataFrame =
+      import df.sparkSession.implicits.*
+      df.withColumn(
+        columnName,
+        from_json(
+          col(columnName),
+          df.sparkSession.read.json(df.select(columnName).as[String]).schema
+        )
+      )
 
     /**
      * Flattens the schema of the dataframe. If any of the column is of StructType or is nested, this transformation
