@@ -5,7 +5,6 @@ ThisBuild / organization := "com.clairvoyant.data.scalaxy"
 ThisBuild / version := "1.0.0"
 
 ThisBuild / resolvers ++= Seq(
-  "DataScalaxyCommon Repo" at "https://maven.pkg.github.com/teamclairvoyant/data-scalaxy-common",
   "DataScalaxyTestUtil Repo" at "https://maven.pkg.github.com/teamclairvoyant/data-scalaxy-test-util"
 )
 
@@ -41,24 +40,27 @@ ThisBuild / wartremoverErrors ++= Warts.allBut(
 
 // ----- TOOL VERSIONS ----- //
 
-val dataScalaxyCommonVersion = "1.0.0"
 val dataScalaxyTestUtilVersion = "1.0.0"
+val sparkVersion = "3.4.1"
 
 // ----- TOOL DEPENDENCIES ----- //
-
-val dataScalaxyCommonDependencies = Seq(
-  "com.clairvoyant.data.scalaxy" %% "common" % dataScalaxyCommonVersion
-)
 
 val dataScalaxyTestUtilDependencies = Seq(
   "com.clairvoyant.data.scalaxy" %% "test-util" % dataScalaxyTestUtilVersion % Test
 )
 
+val sparkDependencies = Seq(
+  "org.apache.spark" %% "spark-core" % sparkVersion,
+  "org.apache.spark" %% "spark-sql" % sparkVersion
+)
+  .map(_ excludeAll ("org.scala-lang.modules", "scala-xml"))
+  .map(_.cross(CrossVersion.for3Use2_13))
+
 // ----- MODULE DEPENDENCIES ----- //
 
 val rootDependencies =
-  dataScalaxyCommonDependencies ++
-    dataScalaxyTestUtilDependencies
+  dataScalaxyTestUtilDependencies ++
+    sparkDependencies
 
 // ----- SETTINGS ----- //
 
