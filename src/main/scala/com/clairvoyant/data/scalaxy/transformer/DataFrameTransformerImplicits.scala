@@ -393,18 +393,28 @@ object DataFrameTransformerImplicits {
      *
      * @param columnName
      *   Name of the column to be converted
+     * @param schemaDDL
+     *   The Data Definition Language (DDL) for the column
      * @return
      *   DataFrame with the column converted to struct type
      */
     def convertJSONStringToStruct(
-        columnName: String
+        columnName: String,
+        schemaDDL: Option[String] = Option.empty
     ): DataFrame =
       import df.sparkSession.implicits.*
+      val schema: DataType = schemaDDL match {
+        case Some(schemaDDL) =>
+          DataType.fromDDL(schemaDDL)
+        case None =>
+          df.sparkSession.read.json(df.select(columnName).as[String]).schema
+      }
+
       df.withColumn(
         columnName,
         from_json(
           col(columnName),
-          df.sparkSession.read.json(df.select(columnName).as[String]).schema
+          schema
         )
       )
 
