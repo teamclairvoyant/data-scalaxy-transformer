@@ -1023,7 +1023,7 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
 
     actualDF should matchExpectedDataFrame(expectedDF)
   }
-  
+
   "convertJSONStringToStruct() - with columnName and schemaDDL" should "convert the specified column to Struct Type" in {
     val df = readJSONFromText(
       """
@@ -1035,9 +1035,9 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
     )
 
     val actualDF = df.convertJSONStringToStruct(
-        columnName = "col_B",
-        schemaDDL = Option("col_C STRING, col_D STRING")
-      )
+      columnName = "col_B",
+      schemaDDL = Option("col_C STRING, col_D STRING")
+    )
 
     val expectedDF = readJSONFromText(
       """
@@ -1063,7 +1063,7 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
 
     actualDF should matchExpectedDataFrame(expectedDF)
   }
-  
+
   "flattenSchema()" should "flatten the dataframe" in {
     val df = readJSONFromText(
       """

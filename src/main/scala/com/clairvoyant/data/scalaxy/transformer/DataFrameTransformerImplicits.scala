@@ -403,12 +403,13 @@ object DataFrameTransformerImplicits {
         schemaDDL: Option[String] = Option.empty
     ): DataFrame =
       import df.sparkSession.implicits.*
-      val schema: DataType = schemaDDL match {
-        case Some(schemaDDL) =>
-          DataType.fromDDL(schemaDDL)
-        case None =>
-          df.sparkSession.read.json(df.select(columnName).as[String]).schema
-      }
+      val schema: DataType =
+        schemaDDL match {
+          case Some(schemaDDL) =>
+            DataType.fromDDL(schemaDDL)
+          case None =>
+            df.sparkSession.read.json(df.select(columnName).as[String]).schema
+        }
 
       df.withColumn(
         columnName,
