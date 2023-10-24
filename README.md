@@ -20,7 +20,7 @@ User can use below available API methods that can be called on a spark dataframe
 * convertJSONStringToStruct
 * flattenSchema
 * renameColumns
-* replaceEmptyStringsWithNulls
+* replaceStringInColumnName
 * splitColumn
 
 ## Documentation

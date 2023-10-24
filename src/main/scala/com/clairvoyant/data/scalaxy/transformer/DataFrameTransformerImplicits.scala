@@ -88,6 +88,61 @@ object DataFrameTransformerImplicits {
       }
     }
 
+    private def applyChangeNameFunctionRecursively(
+        schema: StructType,
+        changeNameFunction: String => String
+    ): StructType =
+      StructType {
+        schema.flatMap {
+          case sf @ StructField(
+                name,
+                _ @ArrayType(arrayNestedType: StructType, containsNull),
+                nullable,
+                metadata
+              ) =>
+            StructType {
+              Seq(
+                sf.copy(
+                  changeNameFunction(name),
+                  ArrayType(
+                    applyChangeNameFunctionRecursively(arrayNestedType, changeNameFunction),
+                    containsNull
+                  ),
+                  nullable,
+                  metadata
+                )
+              )
+            }
+
+          case sf @ StructField(
+                name,
+                structType: StructType,
+                nullable,
+                metadata
+              ) =>
+            StructType {
+              Seq(
+                sf.copy(
+                  changeNameFunction(name),
+                  applyChangeNameFunctionRecursively(structType, changeNameFunction),
+                  nullable,
+                  metadata
+                )
+              )
+            }
+
+          case sf @ StructField(
+                name,
+                _,
+                _,
+                _
+              ) =>
+            StructType {
+              Seq(sf.copy(name = changeNameFunction(name)))
+            }
+        }
+      }
+
     // --- PUBLIC METHODS --- //
 
     /**
@@ -455,11 +510,41 @@ object DataFrameTransformerImplicits {
       )
 
     /**
-     * Replaces all occurrences of empty strings with nulls
+     * Replaces a specific text in column name with the another text
+     * @param columnName
+     *   The column name to be modified
+     * @param pattern
+     *   The sequence of characters or text to be replaced
+     * @param replacement
+     *   The target text to replace with
+     * @param replaceRecursively
+     *   Flag to determine if operation needs to be performed at root level only or at nested level
      * @return
-     *   DataFrame with empty strings being replaced by nulls in column values
+     *   A dataframe with the column name modified
      */
-    def replaceEmptyStringsWithNulls: DataFrame = df.na.replace(df.columns, Map("" -> null))
+    def replaceStringInColumnName(
+        columnName: String,
+        pattern: String,
+        replacement: String,
+        replaceRecursively: Boolean
+    ): DataFrame =
+      val replaceStringInColumnNameFunction =
+        (colName: String) =>
+          if (colName == columnName)
+            colName.replace(pattern, replacement)
+          else
+            colName
+
+      if (replaceRecursively)
+        df.sparkSession.createDataFrame(
+          rowRDD = df.rdd,
+          schema = applyChangeNameFunctionRecursively(
+            schema = df.schema,
+            changeNameFunction = replaceStringInColumnNameFunction
+          )
+        )
+      else
+        df.withColumnRenamed(columnName, replaceStringInColumnNameFunction(columnName))
 
     /**
      * Creates new columns using the value of another column that is a delimiter separated string.
