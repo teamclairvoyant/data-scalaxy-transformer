@@ -1082,25 +1082,89 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
     actualDF should matchExpectedDataFrame(expectedDF)
   }
 
-  "replaceEmptyStringsWithNulls()" should "replace all empty strings with nulls" in {
+  "replaceStringInColumnName() - with replaceRecursively as false" should "modify the column name" in {
     val df = readJSONFromText(
       """
         |{
-        |  "col_A": "",
-        |  "col_B": "val_B",
-        |  "col_C": ""
+        |  "col_A": 5,
+        |  "col_B": 4,
+        |  "col_D": {
+        |     "col_B": 6
+        |   },
+        |  "col_F": [
+        |    {
+        |       "col_B": 4.356343
+        |    }
+        |  ]
         |}
         |""".stripMargin
     )
 
-    val actualDF = df.replaceEmptyStringsWithNulls
+    val actualDF = df.replaceStringInColumnName(
+      columnName = "col_B",
+      pattern = "_B",
+      replacement = "_B_test",
+      replaceRecursively = false
+    )
 
     val expectedDF = readJSONFromText(
       """
         |{
-        |  "col_A": null,
-        |  "col_B": "val_B",
-        |  "col_C": null
+        |  "col_A": 5,
+        |  "col_B_test": 4,
+        |  "col_D": {
+        |     "col_B": 6
+        |   },
+        |  "col_F": [
+        |    {
+        |       "col_B": 4.356343
+        |    }
+        |  ]
+        |}
+        |""".stripMargin
+    )
+
+    actualDF should matchExpectedDataFrame(expectedDF)
+  }
+
+  "replaceStringInColumnName() - with replaceRecursively as true" should "modify the column name" in {
+    val df = readJSONFromText(
+      """
+        |{
+        |  "col_A": 5,
+        |  "col_B": 4,
+        |  "col_D": {
+        |     "col_B": 6
+        |   },
+        |  "col_F": [
+        |    {
+        |       "col_B": 4.356343
+        |    }
+        |  ]
+        |}
+        |""".stripMargin
+    )
+
+    val actualDF = df.replaceStringInColumnName(
+      columnName = "col_B",
+      pattern = "_B",
+      replacement = "_B_test",
+      replaceRecursively = true
+    )
+
+    val expectedDF = readJSONFromText(
+      """
+        |{
+        |  "col_A": 5,
+        |  "col_B_test": 4,
+        |  "col_D": {
+        |     "col_B_test": 6
+        |   },
+        |  "col_F": [
+        |    {
+        |       "col_B_test": 4.356343
+        |    }
+        |  ]
         |}
         |""".stripMargin
     )
