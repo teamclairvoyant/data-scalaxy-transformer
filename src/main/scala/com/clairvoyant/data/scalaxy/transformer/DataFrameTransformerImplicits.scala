@@ -455,10 +455,11 @@ object DataFrameTransformerImplicits {
      */
     def convertJSONStringToStruct(
         columnName: String,
-        schemaDDL: Option[String] = Option.empty
+        schemaDDL: Option[String] = None
     ): DataFrame =
       import df.sparkSession.implicits.*
-      val schema: DataType =
+
+      val schema =
         schemaDDL match {
           case Some(schemaDDL) =>
             DataType.fromDDL(schemaDDL)

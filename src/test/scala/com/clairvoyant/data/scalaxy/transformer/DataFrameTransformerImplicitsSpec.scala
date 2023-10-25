@@ -1036,7 +1036,7 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
 
     val actualDF = df.convertJSONStringToStruct(
       columnName = "col_B",
-      schemaDDL = Option("col_C STRING, col_D STRING")
+      schemaDDL = Some("col_C STRING, col_D STRING")
     )
 
     val expectedDF = readJSONFromText(
