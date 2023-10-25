@@ -2,7 +2,7 @@ ThisBuild / scalaVersion := "3.3.0"
 
 ThisBuild / organization := "com.clairvoyant.data.scalaxy"
 
-ThisBuild / version := "1.1.0"
+ThisBuild / version := "1.2.0"
 
 ThisBuild / resolvers ++= Seq(
   "DataScalaxyTestUtil Repo" at "https://maven.pkg.github.com/teamclairvoyant/data-scalaxy-test-util"
