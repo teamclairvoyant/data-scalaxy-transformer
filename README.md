@@ -18,6 +18,7 @@ User can use below available API methods that can be called on a spark dataframe
 * changeCaseOfColumnNames
 * convertArrayOfStructToArrayOfJSONString
 * convertJSONStringToStruct
+* filterByRegex
 * flattenSchema
 * renameColumns
 * replaceStringInColumnName
