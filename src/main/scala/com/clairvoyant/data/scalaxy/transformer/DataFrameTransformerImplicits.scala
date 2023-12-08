@@ -474,6 +474,7 @@ object DataFrameTransformerImplicits {
           schema
         )
       )
+
     /**
      * Converts the column with JSON string as value to struct type
      *
@@ -482,16 +483,14 @@ object DataFrameTransformerImplicits {
      * @param regex
      *   The Data Definition Language (DDL) for the column
      * @return
-     *   DataFrame 
+     *   DataFrame
      */
 
-    def filterByRegex(columnName: String, regex: String)
-      : DataFrame = 
-        import df.sparkSession.implicits.*
-        val df1 = df.withColumn(columnName, regexp_extract(col(columnName), regex, 0))
-        val df2 = df1.where(col(columnName) =!= "")
-        df2
-    
+    def filterByRegex(columnName: String, regex: String): DataFrame =
+      import df.sparkSession.implicits.*
+      val df1 = df.withColumn(columnName, regexp_extract(col(columnName), regex, 0))
+      val df2 = df1.where(col(columnName) =!= "")
+      df2
 
     /**
      * Flattens the schema of the dataframe. If any of the column is of StructType or is nested, this transformation
