@@ -1064,38 +1064,38 @@ class DataFrameTransformerImplicitsSpec extends DataFrameReader with DataFrameMa
     actualDF should matchExpectedDataFrame(expectedDF)
   }
 
-   "transform() - with valid condition" should "filter the dataframe as expected" in {
+  "transform() - with valid condition" should "filter the dataframe as expected" in {
     val df = readJSONFromText(
-       """
-      |[
-      |  {
-      |    "col_A": "10",
-      |    "col_B": "abc@gmail.com"
-      |  },
-      |  {
-      |    "col_A": "20",
-      |    "col_B": "def@yahoo.com"
-      |  }
-      |]
-      |""".stripMargin
-  )
- 
+      """
+        |[
+        |  {
+        |    "col_A": "10",
+        |    "col_B": "abc@gmail.com"
+        |  },
+        |  {
+        |    "col_A": "20",
+        |    "col_B": "def@yahoo.com"
+        |  }
+        |]
+        |""".stripMargin
+    )
+
     val actualDF = df.filterByRegex("col_B", "\\b[A-Za-z0-9._%+-]+@gmail\\.com\\b")
 
     val expectedDF = readJSONFromText(
-       """
-         |[
-         |  {
-         |    "col_A": "10",
-         |    "col_B": "abc@gmail.com"
-         |  }
-         |]
-         |""".stripMargin
+      """
+        |[
+        |  {
+        |    "col_A": "10",
+        |    "col_B": "abc@gmail.com"
+        |  }
+        |]
+        |""".stripMargin
     )
 
     actualDF should matchExpectedDataFrame(expectedDF)
 
-         }
+  }
 
   "flattenSchema()" should "flatten the dataframe" in {
     val df = readJSONFromText(
